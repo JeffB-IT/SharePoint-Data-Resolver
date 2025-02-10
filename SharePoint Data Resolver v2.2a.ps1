@@ -9,6 +9,9 @@
 # This PowerShell script will prepare data for migration from on-premise to Microsoft 365 SharePoint Online.
 # Please note: Utilize SharePoint Migration scan function to scan source data once script execution is complete; if errors persist, consult scan log CSV downloaded from SharePoint Admin Center and take corrective action if necessary.
 
+
+# -----------------------FUNCTIONS-----------------------
+
 # Function to resolve invalid item names
 function Resolve-InvalidItemNames {
     param (
@@ -16,6 +19,7 @@ function Resolve-InvalidItemNames {
         [string]$logFile
     )
     Write-Host "Resolving invalid item names..."
+    Start-sleep -seconds 2
     # Logic to rename invalid items
     Get-ChildItem -Path $sourcePath -Recurse | ForEach-Object {
         if ($_ -match '[*:"<>?|/\\]') {
@@ -38,6 +42,7 @@ function Remove-EmptyItems {
         [string]$logFile
     )
     Write-Host "Removing empty items..."
+    Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse -File | Where-Object { $_.Length -eq 0 } | ForEach-Object {
         try {
             Remove-Item -Path $_.FullName -ErrorAction Stop
@@ -56,6 +61,7 @@ function Remove-DuplicateArchives {
         [string]$logFile
     )
     Write-Host "Removing duplicate archives..."
+    Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse -Filter "*.zip" | ForEach-Object {
         $originalFile = $_.FullName -replace '\.zip$', ''
         if (Test-Path -Path $originalFile) {
@@ -76,6 +82,8 @@ function Get-FileHash {
     param (
         [string]$filePath
     )
+    Write-Host "Verifying file hash..."
+    Start-sleep -seconds 2
     try {
         $hashAlgorithm = [System.Security.Cryptography.HashAlgorithm]::Create("SHA256")
         $fileStream = [System.IO.File]::OpenRead($filePath)
@@ -96,6 +104,7 @@ function Remove-DuplicateFiles {
         [string]$logFile
     )
     Write-Host "Removing exact duplicate files & verifying via Hash..."
+    Start-sleep -seconds 2
     $fileHashes = @{}
     Get-ChildItem -Path $sourcePath -Recurse -File | ForEach-Object {
         $fileHash = Get-FileHash -filePath $_.FullName
@@ -121,9 +130,10 @@ function Check-UnsupportedFileTypes {
     param (
         [string]$sourcePath,
         [string]$logFile,
-        [string[]]$unsupportedExtensions = @(".exe", ".dll", ".bat", ".ini", "~$")
+        [string[]]$unsupportedExtensions = @(".exe", ".dll", ".bat", ".ini", "~$") # Incompatible SharePoint Online extensions
     )
     Write-Host "Checking for unsupported file types..."
+    Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse -File | ForEach-Object {
         if ($unsupportedExtensions -contains $_.Extension -or $_.Name -match '^\~\$') {
             try {
@@ -146,6 +156,7 @@ function Remove-QuickBooksFiles {
         [string[]]$quickBooksExtensions = @(".qbw", ".qbb", ".qba", ".qbx", ".qby")
     )
     Write-Host "Removing QuickBooks Desktop files..."
+    Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse -File | ForEach-Object {
         if ($quickBooksExtensions -contains $_.Extension) {
             try {
@@ -168,6 +179,7 @@ function Check-PathLengthLimits {
         [int]$maxPathLength = 260
     )
     Write-Host "Checking for path length limits..."
+    Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse | ForEach-Object {
         if ($_.FullName.Length -gt $maxPathLength) {
             $shortenedPath = $_.FullName.Substring(0, $maxPathLength - 10) + "~" + $_.FullName.Substring($_.FullName.Length - 10)
@@ -183,14 +195,16 @@ function Check-PathLengthLimits {
     }
 }
 
-# Main script execution
+# -----------------------MAIN SCRIPT EXECUTION-----------------------
+
+# Define variables
 # sourcePath = "Source NTFS address of data.
 # $logFile = "Destination NTFS address to store script logs."
 $sourcePath = "C:\ALPHA\SharePoint Test"
 $logFile = "C:\ALPHA\Logs\SharePoint_testlog.txt"
 
-Write-Host "Starting SharePoint Data Resolver 2.2 Script..."
-
+Write-Host "Starting SharePoint Data Resolver, please wait..."
+Start-sleep -seconds 2
 # Create or clear the log file
 if (Test-Path $logFile) {
     Clear-Content -Path $logFile
@@ -201,6 +215,9 @@ if (Test-Path $logFile) {
 }
 
 # Remove hidden attribute from all files
+
+Write-Host "Checking for hidden attribute on data and resolving..."
+Start-sleep -seconds 2
 Get-ChildItem -Path $sourcePath -Recurse -Force | ForEach-Object {
     if ($_.Attributes -match "Hidden") {
         try {
@@ -235,4 +252,5 @@ Remove-QuickBooksFiles -sourcePath $sourcePath -logFile $logFile
 # Check and shorten paths that exceed length limits
 Check-PathLengthLimits -sourcePath $sourcePath -logFile $logFile
 
+Start-sleep -seconds 2
 Write-Host "SharePoint Data Resolver completed successfully - refer to log file for report."
