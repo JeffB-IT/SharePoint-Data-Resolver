@@ -18,7 +18,7 @@ function Resolve-InvalidItemNames {
         [string]$sourcePath,
         [string]$logFile
     )
-    Write-Host "Resolving invalid item names..."
+    Write-Host "Resolving invalid item names..." -ForegroundColor Green
     Start-sleep -seconds 2
     # Logic to rename invalid items
     Get-ChildItem -Path $sourcePath -Recurse | ForEach-Object {
@@ -41,7 +41,7 @@ function Remove-EmptyItems {
         [string]$sourcePath,
         [string]$logFile
     )
-    Write-Host "Removing empty items..."
+    Write-Host "Removing empty items..." -ForegroundColor Green
     Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse -File | Where-Object { $_.Length -eq 0 } | ForEach-Object {
         try {
@@ -60,7 +60,7 @@ function Remove-DuplicateArchives {
         [string]$sourcePath,
         [string]$logFile
     )
-    Write-Host "Removing duplicate archives..."
+    Write-Host "Removing duplicate archives..." -ForegroundColor Green
     Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse -Filter "*.zip" | ForEach-Object {
         $originalFile = $_.FullName -replace '\.zip$', ''
@@ -82,7 +82,7 @@ function Get-FileHash {
     param (
         [string]$filePath
     )
-    Write-Host "Verifying file hash..."
+    Write-Host "Verifying file hash..." -ForegroundColor Green
     Start-sleep -seconds 2
     try {
         $hashAlgorithm = [System.Security.Cryptography.HashAlgorithm]::Create("SHA256")
@@ -103,7 +103,7 @@ function Remove-DuplicateFiles {
         [string]$sourcePath,
         [string]$logFile
     )
-    Write-Host "Removing exact duplicate files & verifying via Hash..."
+    Write-Host "Removing exact duplicate files & verifying via Hash..." -ForegroundColor Green
     Start-sleep -seconds 2
     $fileHashes = @{}
     Get-ChildItem -Path $sourcePath -Recurse -File | ForEach-Object {
@@ -132,7 +132,7 @@ function Check-UnsupportedFileTypes {
         [string]$logFile,
         [string[]]$unsupportedExtensions = @(".exe", ".dll", ".bat", ".ini", "~$") # Incompatible SharePoint Online extensions
     )
-    Write-Host "Checking for unsupported file types..."
+    Write-Host "Checking for unsupported file types..." -ForegroundColor Green
     Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse -File | ForEach-Object {
         if ($unsupportedExtensions -contains $_.Extension -or $_.Name -match '^\~\$') {
@@ -155,7 +155,7 @@ function Remove-QuickBooksFiles {
         [string]$logFile,
         [string[]]$quickBooksExtensions = @(".qbw", ".qbb", ".qba", ".qbx", ".qby")
     )
-    Write-Host "Removing QuickBooks Desktop files..."
+    Write-Host "Removing QuickBooks Desktop files..." -ForegroundColor Green
     Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse -File | ForEach-Object {
         if ($quickBooksExtensions -contains $_.Extension) {
@@ -178,7 +178,7 @@ function Check-PathLengthLimits {
         [string]$logFile,
         [int]$maxPathLength = 260
     )
-    Write-Host "Checking for path length limits..."
+    Write-Host "Checking for path length limits..." -ForegroundColor Green
     Start-sleep -seconds 2
     Get-ChildItem -Path $sourcePath -Recurse | ForEach-Object {
         if ($_.FullName.Length -gt $maxPathLength) {
@@ -203,7 +203,7 @@ function Check-PathLengthLimits {
 $sourcePath = "C:\ALPHA\SharePoint Test"
 $logFile = "C:\ALPHA\Logs\SharePoint_testlog.txt"
 
-Write-Host "Starting SharePoint Data Resolver, please wait..."
+Write-Host "Starting SharePoint Data Resolver, please wait..." -ForegroundColor Green
 Start-sleep -seconds 2
 # Create or clear the log file
 if (Test-Path $logFile) {
@@ -216,7 +216,7 @@ if (Test-Path $logFile) {
 
 # Remove hidden attribute from all files
 
-Write-Host "Checking for hidden attribute on data and resolving..."
+Write-Host "Checking for hidden attribute on data and resolving..." -ForegroundColor Green
 Start-sleep -seconds 2
 Get-ChildItem -Path $sourcePath -Recurse -Force | ForEach-Object {
     if ($_.Attributes -match "Hidden") {
@@ -253,4 +253,4 @@ Remove-QuickBooksFiles -sourcePath $sourcePath -logFile $logFile
 Check-PathLengthLimits -sourcePath $sourcePath -logFile $logFile
 
 Start-sleep -seconds 2
-Write-Host "SharePoint Data Resolver completed successfully - refer to log file for report."
+Write-Host "SharePoint Data Resolver completed successfully - refer to log file for report." -ForegroundColor Yellow
